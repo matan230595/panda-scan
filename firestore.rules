@@ -1,0 +1,50 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    match /{document=**} {
+      allow read, write: if false; 
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidInventoryItem(data) {
+      return data.keys().hasAll(['barcode', 'deviceName', 'status', 'room', 'sku', 'lastUpdated']) &&
+             data.barcode is string && data.barcode.size() <= 100 &&
+             data.deviceName is string && data.deviceName.size() <= 200 &&
+             data.status is string && data.status.size() <= 50 &&
+             data.room is string && data.room.size() <= 100 &&
+             data.sku is string && data.sku.size() <= 100 &&
+             data.lastUpdated is number;
+    }
+
+    match /inventory/{itemId} {
+      allow read: if isSignedIn();
+      
+      allow create: if isSignedIn() 
+                    && isValidId(itemId)
+                    && isValidInventoryItem(incoming());
+                    
+      allow update: if isSignedIn()
+                    && isValidId(itemId)
+                    && isValidInventoryItem(incoming());
+                    
+      allow delete: if isSignedIn() && isValidId(itemId);
+    }
+  }
+}

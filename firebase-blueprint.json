@@ -1,0 +1,24 @@
+{
+  "entities": {
+    "InventoryItem": {
+      "title": "Inventory Item",
+      "description": "An item in the inventory",
+      "type": "object",
+      "properties": {
+        "barcode": { "type": "string" },
+        "deviceName": { "type": "string" },
+        "status": { "type": "string" },
+        "room": { "type": "string" },
+        "sku": { "type": "string" },
+        "lastUpdated": { "type": "number" }
+      },
+      "required": ["barcode", "deviceName", "status", "room", "sku", "lastUpdated"]
+    }
+  },
+  "firestore": {
+    "inventory/{itemId}": {
+      "schema": { "$ref": "#/entities/InventoryItem" },
+      "description": "Inventory items stored by their unique ID or barcode"
+    }
+  }
+}
